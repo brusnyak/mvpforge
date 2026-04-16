@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import { resolve } from "path";
 
 export default defineConfig({
   define: {
@@ -7,9 +6,6 @@ export default defineConfig({
   },
   root: "./",
   build: {
-    target: "es2020",
-    rollupOptions: {
-      external: ["fs", "path"]
-    }
+    target: "es2020"
   }
 });
