@@ -1,0 +1,9 @@
+{
+  "name": "mvpforge-api",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "openai": "^4.28.0",
+    "next-connect": "^0.12.0"
+  }
+}
