@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVPForge.ai • Idea → One-File MVP in Minutes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .glass { background: rgba(255,255,255,0.1); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen" x-data="{ tab: 'generator', apiKey: localStorage.getItem('or_key') || '', model: 'openrouter/free' }">
+
+    <!-- NAVBAR -->
+    <nav class="border-b border-white/10 bg-zinc-900/80 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-2xl flex items-center justify-center text-2xl">🔨</div>
+                <h1 class="text-2xl font-bold tracking-tighter">MVPForge.ai</h1>
+            </div>
+            <div class="flex items-center gap-x-8 text-sm">
+                <a @click="tab='generator'" :class="{ 'text-white font-semibold': tab==='generator', 'text-zinc-400 hover:text-white': tab!=='generator' }" class="cursor-pointer">Generator</a>
+                <a @click="tab='validator'" :class="{ 'text-white font-semibold': tab==='validator', 'text-zinc-400 hover:text-white': tab!=='validator' }" class="cursor-pointer">Validator</a>
+                <a @click="tab='mvp'" :class="{ 'text-white font-semibold': tab==='mvp', 'text-zinc-400 hover:text-white': tab!=='mvp' }" class="cursor-pointer">MVP Builder</a>
+                <a @click="tab='dashboard'" :class="{ 'text-white font-semibold': tab==='dashboard', 'text-zinc-400 hover:text-white': tab!=='dashboard' }" class="cursor-pointer">Dashboard</a>
+                <div class="flex items-center gap-x-2">
+                    <input x-model="apiKey" placeholder="OpenRouter Key (free)" 
+                           class="bg-zinc-800 border border-white/20 rounded-2xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-violet-500">
+                    <button @click="saveKey()" class="bg-white text-zinc-900 px-5 py-2 rounded-2xl text-sm font-medium hover:bg-white/90">Save</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <!-- HERO -->
+        <div x-show="tab==='generator'" class="text-center mb-16">
+            <h2 class="text-6xl font-bold tracking-tighter leading-none mb-4">One prompt.<br>Validated idea.<br><span class="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">One-file MVP.</span></h2>
+            <p class="text-xl text-zinc-400 max-w-2xl mx-auto">Built for solo indie hackers like @levelsio. Deep research + instant shippable code using OpenRouter free.</p>
+            <div class="mt-8 flex justify-center">
+                <button @click="generateIdea()" 
+                        class="bg-white text-zinc-900 px-10 py-5 rounded-3xl text-xl font-semibold flex items-center gap-x-3 hover:scale-105 transition">
+                    <i class="fa-solid fa-rocket"></i> Generate My Next $10K/mo Idea
+                </button>
+            </div>
+        </div>
+
+        <!-- TABS CONTENT -->
+        <div x-show="tab==='generator'" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Idea Generator Output -->
+            <div id="idea-output" class="bg-zinc-900 border border-white/10 rounded-3xl p-8 min-h-[500px] hidden"></div>
+            <div class="lg:col-span-1">
+                <h3 class="text-2xl font-semibold mb-4">Describe your niche or pain point</h3>
+                <textarea id="idea-prompt" rows="4" class="w-full bg-zinc-800 border border-white/20 rounded-3xl p-6 text-lg" placeholder="e.g. AI tools for solo founders who ship 30 startups but are burned out"></textarea>
+                <button @click="generateIdea()" class="mt-6 w-full py-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-3xl font-semibold">Forge Idea + Validation</button>
+            </div>
+        </div>
+
+        <!-- Validator Tab -->
+        <div x-show="tab==='validator'" id="validator-content">
+            <input id="validate-input" type="text" placeholder="Paste any startup idea here..." class="w-full bg-zinc-800 border border-white/20 rounded-3xl px-8 py-6 text-xl">
+            <button @click="validateIdea()" class="mt-4 px-10 py-4 bg-white text-zinc-900 rounded-3xl font-semibold">Deep Validate This Idea</button>
+            <div id="validate-output" class="mt-8 bg-zinc-900 border border-white/10 rounded-3xl p-8 hidden"></div>
+        </div>
+
+        <!-- MVP Builder Tab -->
+        <div x-show="tab==='mvp'" class="space-y-6">
+            <h3 class="text-3xl font-bold">Describe the MVP you want (one-file style)</h3>
+            <textarea id="mvp-prompt" rows="6" class="w-full bg-zinc-800 border border-white/20 rounded-3xl p-8 text-lg" placeholder="A simple AI idea validator with OpenRouter integration, dark mode, and copyable code output"></textarea>
+            <button @click="buildMVP()" class="w-full py-6 text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-3xl">Generate Complete One-File MVP Code</button>
+            <pre id="mvp-code" class="bg-black text-emerald-300 p-8 rounded-3xl text-sm overflow-auto max-h-[600px] hidden font-mono"></pre>
+        </div>
+
+        <!-- Dashboard -->
+        <div x-show="tab==='dashboard'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-zinc-900 rounded-3xl p-8">
+                <h4 class="text-sm text-zinc-400">Your Burnout Score</h4>
+                <div class="text-7xl font-bold text-amber-400 mt-2">42%</div>
+                <p class="text-zinc-400 mt-6">AI says: Take a day off. You've shipped 30 products — legendary.</p>
+            </div>
+            <div class="bg-zinc-900 rounded-3xl p-8 col-span-2">
+                <h4 class="font-semibold mb-4">Recent Forged MVPs</h4>
+                <div class="space-y-4" id="dashboard-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function saveKey() {
+            localStorage.setItem('or_key', this.apiKey);
+            alert('✅ OpenRouter key saved (free tier ready)');
+        }
+
+        async function callOpenRouter(system, userPrompt) {
+            const key = localStorage.getItem('or_key') || this.apiKey;
+            if (!key) {
+                alert('⚠️ Add your free OpenRouter API key first');
+                return null;
+            }
+            const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': 'https://mvpforge.ai',
+                    'X-Title': 'MVPForge'
+                },
+                body: JSON.stringify({
+                    model: this.model || 'openrouter/free',
+                    messages: [
+                        { role: "system", content: system },
+                        { role: "user", content: userPrompt }
+                    ],
+                    temperature: 0.8
+                })
+            });
+            const data = await res.json();
+            return data.choices[0].message.content;
+        }
+
+        async function generateIdea() {
+            const promptEl = document.getElementById('idea-prompt');
+            const output = document.getElementById('idea-output');
+            output.classList.remove('hidden');
+            output.innerHTML = `<p class="text-zinc-400">Forging deep research + idea...</p>`;
+            
+            const system = `You are an indie hacker co-founder like @levelsio + @marclou. Generate 2026-viable niche AI SaaS ideas. Be brutally honest.`;
+            const result = await callOpenRouter(system, promptEl.value || "Solo founder burnout tools");
+            
+            output.innerHTML = `
+                <div class="prose prose-invert max-w-none">
+                    <h3 class="text-2xl">🔥 Forged Idea</h3>
+                    ${result || 'Demo mode — add key for real AI'}
+                    <button onclick="copyToClipboard(this)" class="mt-6 text-sm px-6 py-3 border border-white/30 rounded-2xl">Copy Full Report</button>
+                </div>`;
+        }
+
+        async function validateIdea() {
+            const input = document.getElementById('validate-input').value;
+            const output = document.getElementById('validate-output');
+            output.classList.remove('hidden');
+            output.innerHTML = `<p class="animate-pulse">Running deep 2026 market research...</p>`;
+            
+            const system = `Act as a ruthless indie hacker validator. Analyze market size, competitors (PhotoAI, InteriorAI style), X sentiment, revenue potential, risks, and give levelsio-style feedback.`;
+            const result = await callOpenRouter(system, input);
+            
+            output.innerHTML = `<div class="prose prose-invert">${result}</div>`;
+        }
+
+        async function buildMVP() {
+            const promptEl = document.getElementById('mvp-prompt');
+            const codeEl = document.getElementById('mvp-code');
+            codeEl.classList.remove('hidden');
+            codeEl.textContent = 'Generating complete one-file HTML/JS/Tailwind MVP with OpenRouter integration...';
+            
+            const system = `You are an expert at building beautiful, self-contained single-file indie hacker MVPs. Output ONLY a complete, ready-to-copy HTML file (with Tailwind CDN, Alpine.js if needed, OpenRouter integration placeholder, dark mode, responsive). No explanations outside the code.`;
+            const result = await callOpenRouter(system, promptEl.value);
+            
+            codeEl.textContent = result || `<html>...</html> (demo — real one would be here)`;
+        }
+
+        function copyToClipboard(btn) {
+            navigator.clipboard.writeText(btn.parentElement.innerText);
+            btn.textContent = '✅ Copied!';
+            setTimeout(() => btn.textContent = 'Copy Full Report', 2000);
+        }
+
+        // Demo dashboard items
+        document.addEventListener('alpine:initialized', () => {
+            const list = document.getElementById('dashboard-list');
+            list.innerHTML = `
+                <div class="flex justify-between bg-zinc-800 rounded-2xl p-4"><div><strong>AI Support Agent</strong></div><div class="text-emerald-400">$2.4k MRR projected</div></div>
+                <div class="flex justify-between bg-zinc-800 rounded-2xl p-4 mt-3"><div><strong>Founder Burnout Tracker</strong></div><div class="text-emerald-400">Shipped in 11 mins</div></div>
+            `;
+        });
+
+        console.log('%c🚀 MVPForge.ai ready — one file to rule them all', 'color:#a78bfa; font-size:13px');
+    </script>
+</body>
+</html>
