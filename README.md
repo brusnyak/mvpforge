@@ -15,14 +15,6 @@ MVPForge.ai is a tool that generates validated startup ideas and complete one-fi
 2. Add your API key to the app
 3. Start generating ideas and MVPs!
 
-## Deployment
-
-This project is ready for deployment to Vercel:
-
-1. Connect your GitHub repository to Vercel
-2. Set environment variables if needed
-3. Deploy!
-
 ## Development
 
 To run locally:
@@ -32,3 +24,11 @@ To run locally:
 ```
 
 The app is a single HTML file with no build step required.
+
+## Environment Variables
+
+Create a `.env` file with your OpenRouter API key:
+
+```
+OPENROUTER_KEY=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
+```
