@@ -5,7 +5,7 @@ export default defineConfig({
   define: {
     "process.env.OPENROUTER_KEY": JSON.stringify(process.env.VITE_OPENROUTER_KEY),
   },
-  root: "src",
+  root: "./",
   build: {
     target: "es2020",
     rollupOptions: {
